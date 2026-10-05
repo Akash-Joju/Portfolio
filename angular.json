@@ -25,7 +25,10 @@
               "src/styles.css",
               "src/admin-styles.css"
             ],
-            "outputPath": "../php-backend/angular-dist"
+            "outputPath": {
+              "base": "dist",
+              "browser": ""
+            }
           },
           "configurations": {
             "production": {
