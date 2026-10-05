@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// import { LegacyScriptsService } from '../../services/legacy-scripts.service';
+import { LegacyScriptsService } from '../../services/legacy-scripts.service';
 import { HeroComponent } from '../../components/hero/hero.component';
 import { DirectorsNoteComponent } from '../../components/directors-note/directors-note.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -31,13 +31,14 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     "/assets/js/contact.js"
   ];
 
-  // constructor(private legacyScripts: LegacyScriptsService) {}
+  constructor(private legacyScripts: LegacyScriptsService) {}
 
   ngAfterViewInit(): void {
-    // this.legacyScripts.load(this.scripts);
+    this.legacyScripts.load(this.scripts);
   }
 
   ngOnDestroy(): void {
-    // this.legacyScripts.unload();
+    this.legacyScripts.unload();
+
   }
 }

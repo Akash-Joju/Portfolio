@@ -1,0 +1,45 @@
+/* service-hero.css */
+/* Hero container */
+.service-hero {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--hero-bg, #111);
+}
+
+/* Image layers */
+.service-hero-img {
+  position: absolute;
+  width: 120%;
+  height: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+/* Text overlay */
+.service-hero-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  padding: 2rem;
+  z-index: 2;
+}
+.service-hero-text h1 {
+  font-size: clamp(2rem, 8vw, 4rem);
+  margin: 0;
+}
+.service-hero-text p {
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  margin-top: 1rem;
+  max-width: 800px;
+}
