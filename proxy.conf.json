@@ -1,0 +1,53 @@
+{
+  "/admin": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/admin/**": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/blogs": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/blogs/**": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/blog/**": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/search": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/tag/**": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/about.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/services.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/service-details.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/products.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/product-details.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/career.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/career-details.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/blog-details.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/contact.html": { "target": "http://localhost:8000", "secure": false, "changeOrigin": true },
+  "/images/**": {
+    "target": "http://localhost:8000",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

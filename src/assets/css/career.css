@@ -1,0 +1,511 @@
+/* ============================================================
+   CAREER PAGE — page-specific styles
+   Loaded after style.css: reuses tokens, .nav, .eyebrow,
+   .headline, .btn, .page-hero banner (shared with products.css
+   copy — redeclared here so this page doesn't depend on that
+   file), .services / .service-card grid and .site-footer.
+   Adds the values strip and the job-card body variant (role
+   meta badge + apply CTA in place of a plain "explore" link).
+   ============================================================ */
+
+body{ background: var(--bg); }
+
+/* ============================================================
+   PAGE HERO — identical shell to products.css's .page-hero so
+   both pages share the same banner language.
+   ============================================================ */
+.page-hero{
+  position: relative;
+  width: 100%;
+  min-height: 62vh;
+  overflow: hidden;
+  background: var(--bg);
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-hero__bg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+.page-hero__scrim{
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(60% 90% at 50% 8%, rgba(139,107,246,.16), transparent 60%),
+    linear-gradient(180deg, rgba(2,3,10,.85) 0%, rgba(2,3,10,.5) 30%, rgba(2,3,10,.5) 70%, rgba(2,3,10,.9) 100%);
+  pointer-events: none;
+}
+.page-hero__grid-fade{
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 34%;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(2,3,10,0) 0%, rgba(2,3,10,.55) 40%, var(--bg) 74%, var(--bg) 100%);
+  pointer-events: none;
+}
+.page-hero__inner{
+  position: relative;
+  z-index: 3;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(150px, 20vh, 210px) clamp(22px, 5vw, 64px) clamp(60px, 8vh, 90px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.page-hero__eyebrow{ justify-content: center; }
+.page-hero__title{ margin: 0 0 20px; }
+.page-hero__copy{
+  margin: 0 0 34px;
+  max-width: 580px;
+  font-size: clamp(15px, 1.4vw, 17.5px);
+  line-height: 1.65;
+  color: var(--muted);
+}
+.page-hero__cta{ justify-content: center; }
+
+/* ============================================================
+   VALUES STRIP — the principles Xerxes hires and works around
+   ============================================================ */
+.values{
+  position: relative;
+  padding: clamp(50px, 6vw, 74px) 0;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(238,241,255,.08);
+}
+.values__inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(24px, 6vw, 88px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.value-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: rgba(238,241,255,.045);
+  border: 1px solid rgba(238,241,255,.12);
+  transition: border-color .3s var(--ease-out), background .3s var(--ease-out), transform .3s var(--ease-out);
+}
+.value-chip:hover{
+  transform: translateY(-2px);
+  border-color: rgba(139,107,246,.4);
+  background: rgba(238,241,255,.07);
+}
+.value-chip__dot{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: linear-gradient(95deg, var(--blue-2), var(--violet));
+  flex: 0 0 auto;
+}
+
+/* ============================================================
+   OPEN ROLES — reuses .services / .service-card wholesale; the
+   body variant below swaps the plain description+link for a
+   meta badge row and an explicit Apply button.
+   ============================================================ */
+.services{ padding-top: clamp(70px, 9vw, 100px); }
+#open-roles{ scroll-margin-top: 80px; }
+
+/* job title now links through to career-details.html; keep it
+   looking like plain heading text, not a default browser link */
+.service-card__title-link{
+  color: inherit;
+  text-decoration: none;
+  transition: color .3s var(--ease-out);
+}
+.service-card__title-link:hover{ color: var(--blue-2); }
+
+.job-card__badge-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.job-card__badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--blue-2);
+  background: rgba(56,189,248,.1);
+  border: 1px solid rgba(56,189,248,.28);
+}
+.service-card:nth-child(2) .job-card__badge{ color: var(--magenta); background: rgba(192,38,212,.1); border-color: rgba(192,38,212,.28); }
+.service-card:nth-child(3) .job-card__badge{ color: var(--violet); background: rgba(139,107,246,.1); border-color: rgba(139,107,246,.28); }
+.service-card:nth-child(4) .job-card__badge{ color: var(--blue); background: rgba(79,140,255,.1); border-color: rgba(79,140,255,.28); }
+
+.service-card:nth-child(4) .service-card__panel::before{ background: linear-gradient(90deg, var(--blue), var(--blue-2)); }
+.service-card:nth-child(4) .service-card__index{ color: var(--blue); border-color: rgba(79,140,255,.35); }
+.service-card:nth-child(4) .service-card__beam{ background: linear-gradient(to top, rgba(79,140,255,.22), transparent 85%); }
+.service-card:nth-child(4) .service-card__pad::before{ background: radial-gradient(closest-side, rgba(79,140,255,.55), rgba(79,140,255,.15) 55%, transparent 78%); }
+.service-card:nth-child(4) .service-card__pad-ring{ border-color: rgba(79,140,255,.5); }
+.job-card__actions{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+.job-card__actions .service-card__link{ margin: 0; }
+
+/* ============================================================
+   CTA BANNER — spontaneous-application strip
+   ============================================================ */
+.cta-banner{
+  position: relative;
+  overflow: hidden;
+  padding: clamp(50px, 7vw, 76px) 0 clamp(100px, 12vw, 150px);
+  background: var(--bg);
+}
+.cta-banner__panel{
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(36px, 5vw, 54px) clamp(28px, 5vw, 60px);
+  border-radius: 24px;
+  overflow: hidden;
+  text-align: center;
+  background: rgba(238,241,255,.045);
+  border: 1px solid rgba(238,241,255,.12);
+}
+.cta-banner__glow{
+  position: absolute;
+  inset: -30% -10% auto -10%;
+  height: 220%;
+  z-index: 0;
+  background: radial-gradient(closest-side, rgba(79,140,255,.28), transparent 70%);
+  filter: blur(70px);
+  opacity: .5;
+  pointer-events: none;
+}
+.cta-banner__title{
+  position: relative;
+  z-index: 1;
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 30px);
+  color: var(--ink);
+}
+.cta-banner__copy{
+  position: relative;
+  z-index: 1;
+  margin: 0 0 26px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.cta-banner .cta-row{ position: relative; z-index: 1; justify-content: center; margin-bottom: 0; }
+
+@media (max-width: 760px){
+  .values__inner{ gap: 10px; }
+}
+
+/* ============================================================
+   APPLY DRAWER — slide-in application form (career-details.html)
+   Fixed overlay + backdrop, panel anchored to the right edge.
+   Hidden state keeps pointer-events off and the panel translated
+   fully off-screen; .is-open (added by career-apply.js) brings
+   it in. Reuses .field / .check-row / .btn / .orbit wholesale.
+   ============================================================ */
+body.apply-drawer-open{ overflow: hidden; }
+body.apply-drawer-open .xnav,
+body.apply-drawer-open .nav{ z-index: 900 !important; }
+
+.apply-drawer{
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  visibility: hidden;
+  pointer-events: none;
+}
+.apply-drawer.is-open{ visibility: visible; pointer-events: auto; }
+
+.apply-drawer__backdrop{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: default;
+  background: rgba(7, 13, 25, .8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity .45s var(--ease-out);
+}
+.apply-drawer.is-open .apply-drawer__backdrop{ opacity: 1; }
+
+.apply-drawer__panel{
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: clamp(340px, 92vw, 460px);
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  border-left: 1px solid rgba(238,241,255,.12);
+  box-shadow: -40px 0 90px -30px rgba(7, 13, 25, .95), 0 0 70px -20px rgba(138, 24, 26, .35);
+  transform: translateX(100%);
+  transition: transform .55s var(--ease-out);
+}
+.apply-drawer.is-open .apply-drawer__panel{ transform: translateX(0); }
+.apply-drawer__panel::after{
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 3px;
+  background: linear-gradient(180deg, var(--brand-primary), var(--brand-ruby), var(--brand-burgundy));
+  opacity: .9;
+}
+
+.apply-drawer__grid-bg{
+  position: absolute;
+  inset: -20% -20%;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(238,241,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(238,241,255,.035) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(70% 60% at 20% 0%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(70% 60% at 20% 0%, #000 0%, transparent 75%);
+  pointer-events: none;
+}
+.apply-drawer__glow{
+  position: absolute;
+  top: -14%;
+  left: -22%;
+  z-index: 0;
+  width: 60%;
+  height: 34%;
+  background: radial-gradient(closest-side, rgba(138, 24, 26, .5), transparent 72%);
+  filter: blur(90px);
+  opacity: .4;
+  pointer-events: none;
+}
+
+.apply-drawer__close{
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: rgba(138, 24, 26, 0.35);
+  border: 1.5px solid rgba(138, 24, 26, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform .3s var(--ease-out), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.apply-drawer__close:hover{
+  color: #ffffff;
+  background: #8a181a;
+  border-color: #ff6b6b;
+  transform: rotate(90deg) scale(1.08);
+  box-shadow: 0 0 20px rgba(138, 24, 26, 0.85);
+}
+.apply-drawer__close svg{
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.apply-drawer__scroll{
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto;
+  padding: clamp(64px, 9vw, 76px) clamp(22px, 5vw, 32px) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.apply-drawer__head{ position: relative; padding-top: 6px; }
+.apply-drawer__orbit{
+  position: absolute;
+  top: -18px;
+  right: -6px;
+  width: 84px;
+  height: 84px;
+  opacity: .85;
+}
+.apply-drawer__title{
+  margin: 8px 0 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(21px, 3vw, 25px);
+  line-height: 1.25;
+  color: var(--ink);
+  max-width: 80%;
+}
+.apply-drawer__title span{ color: #ff6b6b; }
+.apply-drawer__sub{
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 90%;
+}
+
+.apply-drawer__form{
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.apply-drawer__row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.apply-drawer__row .field{ min-width: 0; }
+.apply-drawer__textarea{ resize: vertical; min-height: 88px; font-family: var(--font-body); }
+.field__optional{ text-transform: none; letter-spacing: 0; color: var(--muted-dim); font-family: var(--font-body); font-size: 11.5px; }
+
+.apply-drawer__file{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: rgba(7, 13, 25, 0.65);
+  border: 1px dashed rgba(238,241,255,.22);
+  color: var(--muted);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: border-color .3s var(--ease-out), background .3s var(--ease-out), color .3s var(--ease-out);
+}
+.apply-drawer__file:hover{ border-color: rgba(138, 24, 26, .65); color: var(--ink); }
+.apply-drawer__file svg{ width: 17px; height: 17px; flex: 0 0 auto; color: #ff6b6b; }
+.apply-drawer__file.is-filled{
+  border-style: solid;
+  border-color: rgba(138, 24, 26, .65);
+  background: rgba(138, 24, 26, .15);
+  color: var(--ink);
+}
+
+.apply-drawer__actions{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.apply-drawer__actions .btn{
+  flex: 1;
+  justify-content: center;
+}
+.apply-drawer__cancel{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.apply-drawer__cancel:hover{
+  border-color: rgba(138, 24, 26, 0.6);
+  color: #ff8095;
+}
+.apply-drawer__cancel svg{
+  width: 15px;
+  height: 15px;
+}
+
+.apply-drawer__submit{ justify-content: center; position: relative; }
+.apply-drawer__submit.is-loading{ pointer-events: none; }
+.apply-drawer__submit.is-loading span, .apply-drawer__submit.is-loading svg{ opacity: 0; }
+.apply-drawer__submit.is-loading::after{
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 16px; height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .35);
+  border-top-color: #ffffff;
+  animation: btnSpin .7s linear infinite;
+}
+
+/* -------- success state -------- */
+.apply-drawer__success{
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 8px 2px;
+}
+#applyForm.is-submitted{ display: none; }
+#applyForm.is-submitted ~ .apply-drawer__success{
+  display: flex;
+  animation: fadeUpIn .5s var(--ease-out);
+}
+.apply-drawer__success-ring{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, #7c1a1a, #8a181a);
+  box-shadow: 0 0 30px -6px rgba(138, 24, 26, .75);
+}
+.apply-drawer__success-ring svg{ width: 24px; height: 24px; }
+.apply-drawer__success h3{
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ink);
+}
+.apply-drawer__success p{
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.apply-drawer__success p strong{ color: var(--ink); font-weight: 600; }
+.apply-drawer__done{ margin-top: 4px; }
+
+@media (max-width: 480px){
+  .apply-drawer__row{ grid-template-columns: 1fr; }
+  .apply-drawer__title{ max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .apply-drawer__panel, .apply-drawer__backdrop{ transition: none; }
+  .apply-drawer__close{ transition: none; }
+}
