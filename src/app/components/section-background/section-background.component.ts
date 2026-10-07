@@ -15,6 +15,7 @@ const TOTAL_FRAMES = 90;
 const FRAME_BASE_PATH = 'assets/images/section/ezgif-frame-';
 const FRAME_EXTENSION = '.webp';
 const PIXELS_PER_FRAME = 28; // pixels of scroll per animation frame advance
+const MOBILE_STRIDE = 3;     // phones/save-data: use only every 3rd frame (1/3 of the data)
 
 @Component({
   selector: 'app-section-background',
@@ -97,6 +98,11 @@ const PIXELS_PER_FRAME = 28; // pixels of scroll per animation frame advance
       z-index: 1;
     }
 
+    /* Big blurred glows are very expensive to re-composite on phones */
+    @media (max-width: 768px) {
+      .bg-glow-1, .bg-glow-2 { display: none; }
+    }
+
     .bg-top-accent {
       position: absolute;
       top: 0;
@@ -144,10 +150,15 @@ export class SectionBackgroundComponent implements OnInit, AfterViewInit, OnDest
   private isDestroyed = false;
   private animationFrameId: number | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private lite = false;
+  private stride = 1;
 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    const conn: any = (navigator as any).connection;
+    this.lite = window.innerWidth < 768 || !!conn?.saveData;
+    this.stride = this.lite ? MOBILE_STRIDE : 1;
     this.preloadFrames();
   }
 
@@ -201,13 +212,11 @@ export class SectionBackgroundComponent implements OnInit, AfterViewInit, OnDest
    */
   private async loadRemainingFrames(): Promise<void> {
     const BATCH_SIZE = 4;
-    for (let i = 1; i < TOTAL_FRAMES; i += BATCH_SIZE) {
+    const wanted: number[] = [];
+    for (let i = this.stride; i < TOTAL_FRAMES; i += this.stride) wanted.push(i);
+    for (let k = 0; k < wanted.length; k += BATCH_SIZE) {
       if (this.isDestroyed) return;
-      const batch: Promise<void>[] = [];
-      for (let j = i; j < Math.min(i + BATCH_SIZE, TOTAL_FRAMES); j++) {
-        batch.push(this.loadSingleFrame(j));
-      }
-      await Promise.all(batch);
+      await Promise.all(wanted.slice(k, k + BATCH_SIZE).map((j) => this.loadSingleFrame(j)));
     }
   }
 
@@ -240,7 +249,9 @@ export class SectionBackgroundComponent implements OnInit, AfterViewInit, OnDest
     // Continuous looping calculation:
     // When all 180 frames finish, modulo arithmetic wraps smoothly back to frame 0
     const rawFrame = Math.floor(scrolledPx / PIXELS_PER_FRAME);
-    this.targetFrameIndex = ((rawFrame % TOTAL_FRAMES) + TOTAL_FRAMES) % TOTAL_FRAMES;
+    let target = ((rawFrame % TOTAL_FRAMES) + TOTAL_FRAMES) % TOTAL_FRAMES;
+    if (this.stride > 1) target = (Math.round(target / this.stride) * this.stride) % TOTAL_FRAMES;
+    this.targetFrameIndex = target;
   };
 
   private onResize = (): void => {
@@ -250,7 +261,7 @@ export class SectionBackgroundComponent implements OnInit, AfterViewInit, OnDest
 
   private resizeCanvas(): void {
     const canvas = this.canvasRef.nativeElement;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = this.lite ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     const width = canvas.clientWidth || window.innerWidth;
     const height = canvas.clientHeight || window.innerHeight;
 

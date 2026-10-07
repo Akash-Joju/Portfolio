@@ -58,7 +58,7 @@ export interface StageState {
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
-
+   
 
     :host {
       display: block;
@@ -758,14 +758,14 @@ export interface StageState {
           I love turning ideas into clean, interactive, and meaningful digital experiences that are visually engaging, responsive, and built with the user in mind.
             </p>
 
-            <!-- <div class="cta-wrapper">
+            <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="cta-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
-            </div> -->
+            </div>
           </div>
 
           <!-- STAGE 1: Feature 01 - High-Velocity Web & Cloud Infrastructure (0.22 - 0.44) -->
@@ -782,7 +782,7 @@ export interface StageState {
             <p class="stage-desc">
              With experience in Angular, Node.js, REST APIs, and databases, I enjoy building complete applications that connect beautiful interfaces with powerful backend functionality.
             </p>
-<!-- 
+
             <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
@@ -790,7 +790,7 @@ export interface StageState {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
-            </div> -->
+            </div>
           </div>
 
           <!-- STAGE 2: Feature 02 - Cross-Platform Mobile & Digital Commerce (0.46 - 0.70) -->
@@ -807,7 +807,7 @@ export interface StageState {
             <p class="stage-desc">
              Through vibe coding and AI-assisted development, I experiment with new ideas, prototype quickly, and turn concepts into real products while keeping engineering and usability at the core.
             </p>
-<!-- 
+
             <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
@@ -815,7 +815,7 @@ export interface StageState {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
-            </div> -->
+            </div>
           </div>
 
           <!-- STAGE 3: Feature 03 - Enterprise AI & Autonomous Workflows (0.72 - 0.94) -->
@@ -833,14 +833,14 @@ export interface StageState {
              I enjoy breaking down complex problems, exploring different approaches, and building practical solutions that are efficient, scalable, and easy to use.
             </p>
 
-            <!-- <div class="cta-wrapper">
+            <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="cta-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
-            </div> -->
+            </div>
           </div>
 
           <!-- STAGE 4: Transition Outro (0.95 - 1.00) -->
@@ -1041,6 +1041,10 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private modelRafId = 0;
   private modelClock = new THREE.Clock();
   private modelPlaced = false;
+  private modelVisible = true;           // false while the hero is scrolled out of view
+  private heroObserver?: IntersectionObserver;
+  private lastW = 0;
+  private lastH = 0;
 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) { }
 
@@ -1054,9 +1058,19 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setupModelScene();
     this.ngZone.runOutsideAngular(() => {
       this.scrollHandler = () => this.onScroll();
+      this.lastW = window.innerWidth;
+      this.lastH = window.innerHeight;
       this.resizeHandler = () => {
-        this.fitCanvas();
-        this.fitModelCanvas();
+        // On phones the address bar showing/hiding fires 'resize' while scrolling.
+        // Re-creating the canvases for that tiny height change causes stutter,
+        // so only refit on a real size change.
+        const w = window.innerWidth, h = window.innerHeight;
+        if (w !== this.lastW || Math.abs(h - this.lastH) > 160 || w >= 1024) {
+          this.lastW = w;
+          this.lastH = h;
+          this.fitCanvas();
+          this.fitModelCanvas();
+        }
         const before = this.dockVisible;
         this.updateDockVisible();
         if (before !== this.dockVisible) this.cdr.detectChanges();
@@ -1081,6 +1095,7 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     window.removeEventListener('orientationchange', this.orientationHandler);
     cancelAnimationFrame(this.rafId);
     cancelAnimationFrame(this.modelRafId);
+    this.heroObserver?.disconnect();
     if (this.dockTimer) clearInterval(this.dockTimer);
     this.disposeModelScene();
   }
@@ -1116,7 +1131,7 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private fitCanvas(): void {
     const canvas = this.canvasRef.nativeElement;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.5 : 2);
     const logW = window.innerWidth;
     const logH = window.innerHeight;
 
@@ -1135,19 +1150,41 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private preloadFrames(): void {
     this.frames = new Array(TOTAL_FRAMES);
 
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
+    // Phones load every 2nd frame (half the data); drawFrame() falls back to
+    // the nearest loaded frame, so the animation still looks continuous.
+    const stride = window.innerWidth < 768 ? 2 : 1;
+    const indexes: number[] = [];
+    for (let i = 0; i < TOTAL_FRAMES; i += stride) indexes.push(i);
+    if (indexes[indexes.length - 1] !== TOTAL_FRAMES - 1) indexes.push(TOTAL_FRAMES - 1);
+
+    const loadOne = (i: number) => new Promise<void>((resolve) => {
       const img = new Image();
+      img.decoding = 'async';
       const num = String(i + 1).padStart(3, '0');
+      img.onload = () => { if (i === 0) this.drawFrame(0); resolve(); };
+      img.onerror = () => resolve();
       img.src = `${FRAME_PATH}${num}.webp`;
-
-      img.onload = () => {
-        if (i === 0) {
-          this.drawFrame(0);
-        }
-      };
-
       this.frames[i] = img;
+    });
+
+    // First frame immediately, then the rest in small batches
+    (async () => {
+      await loadOne(0);
+      for (let k = 1; k < indexes.length; k += 6) {
+        await Promise.all(indexes.slice(k, k + 6).map(loadOne));
+      }
+    })();
+  }
+
+  /** Closest frame that has finished loading (used when the exact one is missing). */
+  private nearestLoaded(index: number): HTMLImageElement | undefined {
+    for (let d = 1; d < 40; d++) {
+      for (const j of [index - d, index + d]) {
+        const f = this.frames[j];
+        if (f && f.complete && f.naturalWidth > 0) return f;
+      }
     }
+    return undefined;
   }
 
   private onScroll(): void {
@@ -1166,9 +1203,10 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     this.computeStageStates(progress);
 
     cancelAnimationFrame(this.rafId);
-    this.rafId = requestAnimationFrame(() => this.renderFrame());
-
-    this.cdr.detectChanges();
+    this.rafId = requestAnimationFrame(() => {
+      this.renderFrame();
+      this.cdr.detectChanges();   // once per frame (was: on every scroll event)
+    });
   }
 
   private renderFrame(): void {
@@ -1180,8 +1218,9 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private drawFrame(index: number): void {
-    const img = this.frames[index];
-    if (!img || !img.complete || !this.ctx) return;
+    let img: HTMLImageElement | undefined = this.frames[index];
+    if (!img || !img.complete || !img.naturalWidth) img = this.nearestLoaded(index);
+    if (!img || !this.ctx) return;
 
     const cw = window.innerWidth;
     const ch = window.innerHeight;
@@ -1325,7 +1364,7 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     this.modelRenderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
-      antialias: true,
+      antialias: window.innerWidth >= 768,
     });
     this.fitModelCanvas();
 
@@ -1374,10 +1413,27 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       (err) => console.error('Failed to load hero model:', err)
     );
 
-    this.ngZone.runOutsideAngular(() => this.animateModel());
+    this.ngZone.runOutsideAngular(() => {
+      this.animateModel();
+
+      // Stop drawing the 3D model while the hero is scrolled out of view
+      const heroEl = document.getElementById('hero');
+      if (heroEl && 'IntersectionObserver' in window) {
+        this.heroObserver = new IntersectionObserver((entries) => {
+          const visible = entries[0].isIntersecting;
+          this.modelVisible = visible;
+          if (visible && !this.modelRafId) {
+            this.modelClock.getDelta();            // drop the time spent paused
+            this.modelRafId = requestAnimationFrame(this.animateModel);
+          }
+        }, { rootMargin: '100px 0px' });
+        this.heroObserver.observe(heroEl);
+      }
+    });
   }
 
   private animateModel = (): void => {
+    if (!this.modelVisible) { this.modelRafId = 0; return; }   // paused while off-screen
     this.modelRafId = requestAnimationFrame(this.animateModel);
     if (!this.modelRenderer || !this.modelRoot) return;
 
@@ -1435,7 +1491,7 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private fitModelCanvas(): void {
     if (!this.modelRenderer || !this.modelCamera) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.25 : 2);
     this.modelRenderer.setPixelRatio(dpr);
     this.modelRenderer.setSize(window.innerWidth, window.innerHeight, false);
 

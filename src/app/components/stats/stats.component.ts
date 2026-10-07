@@ -22,7 +22,7 @@ interface TechCard {
   standalone: true,
   imports: [CommonModule],
   styles: [`
-    
+   
 
     :host {
       display: block;
@@ -451,8 +451,14 @@ interface TechCard {
       .stat-box-top { margin-bottom: 1rem; }
       .stat-label { font-size: 1.05rem; }
       .stat-tech-stack { overflow-wrap: anywhere; }
-      /* gentler tilt so cards never push past the screen edge */
-      .stat-box-wrap.is-visible .stat-box { animation-name: statTiltMobile; }
+      /* Phones: no infinite 3D tilt / heavy shadows / blurred glows.
+         These caused scroll stutter when coming back up to this section. */
+      .stats-grid, .stat-box-wrap { perspective: none; }
+      .stat-box-wrap.is-visible .stat-box { animation: none; will-change: auto; transform-style: flat; }
+      .stat-box-top, .stat-counter-number { transform: none; }
+      .stat-laser-beam::after { animation: none; }
+      .stat-box { box-shadow: 0 10px 24px -12px rgba(0,0,0,.8), 0 0 16px -8px var(--stat-glow, rgba(255,125,125,.35)); }
+      .stats-glow-left, .stats-glow-right { display: none; }
     }
 
     @media (max-width: 380px) {
