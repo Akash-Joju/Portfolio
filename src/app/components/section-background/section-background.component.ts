@@ -11,10 +11,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-const TOTAL_FRAMES = 180;
+const TOTAL_FRAMES = 90;
 const FRAME_BASE_PATH = 'assets/images/section/ezgif-frame-';
 const FRAME_EXTENSION = '.webp';
-const PIXELS_PER_FRAME = 14; // pixels of scroll per animation frame advance
+const PIXELS_PER_FRAME = 28; // pixels of scroll per animation frame advance
 
 @Component({
   selector: 'app-section-background',
