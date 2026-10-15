@@ -15,7 +15,7 @@ const TOTAL_FRAMES = 300;
 const FRAME_PATH = 'assets/images/herosection/ezgif-frame-';
 
 // ── Replace this with your own image path ──────────────────────────────
-const MODEL_IMAGE_PATH = 'assets/images/akash-hero1.png';
+const MODEL_IMAGE_PATH = 'assets/images/akash-hero1.webp';
 
 // ── Placement constants ────────────────────────────────────────────────
 const MODEL_BASE_DIAMETER = 1.5;
