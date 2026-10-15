@@ -54,10 +54,6 @@
               <div class="service-card__body">
                 <h3 class="service-card__title">Drive Awake, Stay Safe</h3>
                 <p class="service-card__desc">IoT-based real-time drowsiness detection &amp; alert system — detects driver fatigue through sensors and ML, then pushes instant warnings and shares live status via a companion mobile app.</p>
-                <!-- <a href="#" class="service-card__link">
-                  <span>View project</span>
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a> -->
               </div>
             </div>
           </div>
@@ -88,10 +84,6 @@
               <div class="service-card__body">
                 <h3 class="service-card__title">Campus ConnectsPro</h3>
                 <p class="service-card__desc">An automated portfolio system for students &amp; professionals — dynamically generates, hosts, and updates personal portfolios with zero manual effort, complete with auth and admin dashboard.</p>
-                <!-- <a href="#" class="service-card__link">
-                  <span>View project</span>
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a> -->
               </div>
             </div>
           </div>
@@ -122,10 +114,6 @@
               <div class="service-card__body">
                 <h3 class="service-card__title">Image Caption Generation</h3>
                 <p class="service-card__desc">A deep learning model that generates natural-language captions for any image — combining CNN feature extraction with an LSTM decoder, built end-to-end in TensorFlow &amp; Keras.</p>
-                <!-- <a href="#" class="service-card__link">
-                  <span>View project</span>
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a> -->
               </div>
             </div>
           </div>
@@ -140,9 +128,9 @@
 
 <!-- ============================================================
      CONTACT
-     Reach-out card with email, phone & LinkedIn.
+     Reach-out form with email, phone & message.
      Same holographic orbit + tilt visual language as the rest
-     of the page — no forms, just direct contact channels.
+     of the page.
      ============================================================ -->
 <section class="newsletter" id="contact">
 
@@ -183,57 +171,97 @@
               <span class="newsletter-card__sweep" aria-hidden="true"></span>
               <span class="dn-sheen newsletter-card__glare" aria-hidden="true"></span>
 
-              <!-- Email -->
-              <a class="contact-item" href="mailto:akashjoju9@gmail.com">
-                <span class="contact-item__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 6h16v12H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                    <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-                <span class="contact-item__body">
-                  <span class="contact-item__label">Email</span>
-                  <span class="contact-item__value">akashjoju9@gmail.com</span>
-                </span>
-                <span class="contact-item__arrow" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-              </a>
+              <form
+                class="contact-form"
+                [formGroup]="contactForm"
+                (ngSubmit)="onSubmit()"
+                novalidate
+              >
 
-              <!-- Phone -->
-              <a class="contact-item" href="tel:+919846229603">
-                <span class="contact-item__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M5 4h3l2 5-2.5 1.5a12 12 0 006 6L15 14l5 2v3a2 2 0 01-2 2A15 15 0 013 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-                <span class="contact-item__body">
-                  <span class="contact-item__label">Phone</span>
-                  <span class="contact-item__value">+91 9846229603</span>
-                </span>
-                <span class="contact-item__arrow" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-              </a>
+                <!-- Email -->
+                <label
+                  class="contact-field"
+                  [class.is-invalid]="emailCtrl?.invalid && emailCtrl?.touched"
+                >
+                  <span class="contact-field__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M4 6h16v12H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                      <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span class="contact-field__body">
+                    <span class="contact-field__label">Email</span>
+                    <input
+                      type="email"
+                      formControlName="email"
+                      placeholder="you@example.com"
+                      autocomplete="email"
+                    />
+                  </span>
+                </label>
 
-              <!-- LinkedIn -->
-     <a class="contact-item" href="https://www.linkedin.com/in/akash-joju/"
-   target="_blank" rel="noopener noreferrer"
-   style="position: relative; z-index: 999; pointer-events: auto;">
-                <span class="contact-item__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/>
-                    <path d="M7.5 10.5v6M7.5 7.75v.01M11 16.5v-3.25a2 2 0 114 0v3.25M11 10.5v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Phone -->
+                <label
+                  class="contact-field"
+                  [class.is-invalid]="phoneCtrl?.invalid && phoneCtrl?.touched"
+                >
+                  <span class="contact-field__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M5 4h3l2 5-2.5 1.5a12 12 0 006 6L15 14l5 2v3a2 2 0 01-2 2A15 15 0 013 6a2 2 0 012-2z"
+                            stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span class="contact-field__body">
+                    <span class="contact-field__label">Phone</span>
+                    <input
+                      type="tel"
+                      formControlName="phone"
+                      placeholder="+91 90000 00000"
+                      autocomplete="tel"
+                    />
+                  </span>
+                </label>
+
+                <!-- Description -->
+                <label
+                  class="contact-field contact-field--area"
+                  [class.is-invalid]="descCtrl?.invalid && descCtrl?.touched"
+                >
+                  <span class="contact-field__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M4 5h16v11H8l-4 4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span class="contact-field__body">
+                    <span class="contact-field__label">Message</span>
+                    <textarea
+                      formControlName="description"
+                      rows="3"
+                      placeholder="Tell me about your project…"
+                    ></textarea>
+                  </span>
+                </label>
+
+                <button
+                  type="submit"
+                  class="contact-submit"
+                  [disabled]="contactForm.invalid || submitting"
+                >
+                  <span>{{ submitting ? 'Sending…' : 'Send message' }}</span>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                </span>
-                <span class="contact-item__body">
-                  <span class="contact-item__label">LinkedIn</span>
-                  <span class="contact-item__value">linkedin.com/in/akash-joju/</span>
-                </span>
-                <span class="contact-item__arrow" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-              </a>
+                </button>
+
+                <p
+                  *ngIf="status"
+                  class="contact-status"
+                  [class.contact-status--ok]="statusType === 'success'"
+                  [class.contact-status--err]="statusType === 'error'"
+                >{{ status }}</p>
+
+              </form>
 
             </div>
           </div>
@@ -250,124 +278,3 @@
 
 <!-- Angular Footer Component -->
 <app-footer-nav></app-footer-nav>
-
-<!-- ============================================================
-     CONTACT-ROW STYLES
-     Scoped by .contact-panel so they don't affect anything else.
-     Kept inline because the section is styled from a global
-     stylesheet (ViewEncapsulation.None).
-     ============================================================ -->
-<style>
-  .contact-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    padding: 1.75rem 1.5rem;
-  }
-
-  .contact-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.95rem 1.1rem;
-    border-radius: 1rem;
-    text-decoration: none;
-    color: #e6eefb;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    transition: transform .25s ease, background .25s ease,
-                border-color .25s ease, box-shadow .25s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .contact-item::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(135deg,
-      rgba(255, 125, 125, 0.10) 0%,
-      rgba(138, 24, 26, 0.06) 45%,
-      transparent 100%);
-    opacity: 0;
-    transition: opacity .3s ease;
-    pointer-events: none;
-  }
-
-  .contact-item:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 125, 125, 0.35);
-    box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.75),
-                0 0 24px -8px rgba(255, 125, 125, 0.35);
-  }
-  .contact-item:hover::before { opacity: 1; }
-
-  .contact-item__icon {
-    flex: 0 0 auto;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 0.85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(138, 24, 26, 0.15);
-    border: 1px solid rgba(138, 24, 26, 0.35);
-    color: #ff7d7d;
-    box-shadow: inset 0 0 12px rgba(255, 125, 125, 0.08);
-  }
-  .contact-item__icon svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  .contact-item__body {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .contact-item__label {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #94a3b8;
-  }
-
-  .contact-item__value {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #ffffff;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .contact-item__arrow {
-    flex: 0 0 auto;
-    width: 1.5rem;
-    height: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #94a3b8;
-    transition: transform .25s ease, color .25s ease;
-  }
-  .contact-item__arrow svg { width: 1.05rem; height: 1.05rem; }
-
-  .contact-item:hover .contact-item__arrow {
-    transform: translateX(4px);
-    color: #ff7d7d;
-  }
-
-  @media (max-width: 480px) {
-    .contact-item__value { font-size: 0.875rem; }
-    .contact-item__icon { width: 2.5rem; height: 2.5rem; }
-  }
-</style>

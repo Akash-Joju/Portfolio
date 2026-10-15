@@ -10,33 +10,25 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 const TOTAL_FRAMES = 300;
 const FRAME_PATH = 'assets/images/herosection/ezgif-frame-';
-const MODEL_PATH = 'assets/models/tiny-planet.glb';
-const DRACO_DECODER_PATH = 'assets/draco/';
-const MODEL_BASE_DIAMETER = 1.5; // "medium-small" on-screen size
 
-// --- Where the 3D model sits: on the bottom part of the glowing globe (right side of the frame) ---
-// Measured on frame 273 (1280x720). Values are in FRAME pixels, so the model stays on the
-// globe on every screen size (same cover-fit maths as drawFrame()).
-// (The Earth's horizon on the LEFT of that frame is around x 470, y 490 if you ever want it there.)
+// ── Replace this with your own image path ──────────────────────────────
+const MODEL_IMAGE_PATH = 'assets/images/akash-hero1.png';
+
+// ── Placement constants ────────────────────────────────────────────────
+const MODEL_BASE_DIAMETER = 1.5;
 const FRAME_W = 1280;
 const FRAME_H = 720;
-const EARTH_X = 868;      // globe centre x (px from left of frame)
-const EARTH_Y = 462;      // bottom edge of the globe (px from top of frame) - the model's base rests here
-const MODEL_SINK = 0;     // how far the model's base dips below that edge (fraction of its height)
-const MODEL_SCALE = 1;    // 1 = original size (unchanged). Raise/lower to resize.
-const MODEL_OFFSET_X = 0; // nudge in frame px (+ = right)
-const MODEL_OFFSET_Y = 0; // nudge in frame px (+ = down)
-
-// Small screens: the frame image is cropped, so the Earth's rim is off-screen.
-// Below this width (or whenever the model would be cut off) it sits in the screen centre.
-const CENTER_BELOW_WIDTH = 900; // px
-const CENTER_OFFSET_Y = 0;      // centre mode: + moves it up (fraction of screen height, e.g. 0.05)
+const EARTH_X = 868;
+const EARTH_Y = 462;
+const MODEL_SINK = 0;
+const MODEL_SCALE = 1;
+const MODEL_OFFSET_X = 0;
+const MODEL_OFFSET_Y = 0;
+const CENTER_BELOW_WIDTH = 900;
+const CENTER_OFFSET_Y = 0;
 
 export interface DockService {
   num: string;
@@ -58,14 +50,11 @@ export interface StageState {
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
-   
-
     :host {
       display: block;
-      /* ---- Bottom service dock: tweak these to restyle it ---- */
       --dock-h: clamp(150px, 23vh, 230px);
-      --dock-a: #0057e3ff;   /* blue   */
-      --dock-b: #3850ebff;   /* violet */
+      --dock-a: #0057e3ff;
+      --dock-b: #3850ebff;
     }
 
     .hero-scroll-driver {
@@ -93,10 +82,131 @@ export interface StageState {
       z-index: 0;
     }
 
-    /* 3D model layer — sits above the frame sequence, below the vignette/text */
-    .model-canvas {
+    /* ══════════════════════════════════════════════════════════════════
+       ANIMATED IMAGE LAYER  (replaces the 3D model)
+       Layers, outer → inner:
+         1. .model-wrapper    → positioning + pulsing aura
+         2. .model-tilt       → subtle 3D tilt (rotateX / rotateY / rotateZ)
+         3. .model-float      → vertical bob
+         4. .model-image      → breathing scale + glow pulse
+       ══════════════════════════════════════════════════════════════════ */
+    .model-wrapper {
+      position: absolute;
       z-index: 2;
       pointer-events: none;
+      transform: translate(-50%, -50%);
+      perspective: 1200px;
+      will-change: left, top, width, height;
+    }
+
+    /* Soft pulsing aura that blooms behind the image */
+    .model-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: -24%;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(80, 140, 255, 0.42) 0%,
+        rgba(80, 100, 255, 0.20) 42%,
+        transparent 72%
+      );
+      filter: blur(24px);
+      animation: model-aura 5s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Subtle 3D tilt — a slow, graceful sway */
+    .model-tilt {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      animation: model-tilt 14s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* Gentle vertical bob */
+    .model-float {
+      display: block;
+      width: 100%;
+      height: 100%;
+      animation: model-float 6.5s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* The image itself: breathing scale + colour glow pulse */
+    .model-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform-origin: center;
+      user-select: none;
+      -webkit-user-drag: none;
+      animation:
+        model-breathe 6s ease-in-out infinite,
+        model-glow 6s ease-in-out infinite;
+    }
+
+    /* ── Keyframes ─────────────────────────────────────────────────── */
+
+    /* Slow, elegant 3D sway — never a full spin */
+    @keyframes model-tilt {
+      0% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+      }
+      25% {
+        transform: rotateX(4.5deg) rotateY(6deg) rotateZ(1.2deg);
+      }
+      50% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+      }
+      75% {
+        transform: rotateX(-4.5deg) rotateY(-6deg) rotateZ(-1.2deg);
+      }
+      100% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+      }
+    }
+
+    /* Gentle float up & down */
+    @keyframes model-float {
+      0%, 100% { transform: translateY(-10px); }
+      50%      { transform: translateY(10px); }
+    }
+
+    /* Subtle breathing pulse (barely noticeable, adds life) */
+    @keyframes model-breathe {
+      0%, 100% { transform: scale(0.97); }
+      50%      { transform: scale(1.04); }
+    }
+
+    /* Coloured glow that brightens and dims */
+    @keyframes model-glow {
+      0%, 100% {
+        filter:
+          drop-shadow(0 16px 36px rgba(60, 90, 255, 0.45))
+          drop-shadow(0 0 18px rgba(120, 160, 255, 0.30));
+      }
+      50% {
+        filter:
+          drop-shadow(0 22px 48px rgba(80, 120, 255, 0.75))
+          drop-shadow(0 0 32px rgba(140, 180, 255, 0.55));
+      }
+    }
+
+    /* Aura behind the image — slow bloom and fade */
+    @keyframes model-aura {
+      0%, 100% {
+        opacity: 0.55;
+        transform: scale(0.92);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.10);
+      }
     }
 
     /* Ambient atmospheric overlays */
@@ -140,7 +250,6 @@ export interface StageState {
       z-index: 1;
     }
 
-    /* Top accent line */
     .top-accent {
       position: absolute;
       top: 0;
@@ -151,7 +260,6 @@ export interface StageState {
       z-index: 20;
     }
 
-    /* Stage content container */
     .overlay-container {
       position: absolute;
       inset: 0;
@@ -161,27 +269,26 @@ export interface StageState {
       align-items: center;
       justify-content: flex-start;
       padding: 5rem 1.5rem calc(var(--dock-h) + 1.5rem);
+      padding-left: var(--site-edge);
+      padding-right: var(--site-edge);
     }
 
     @media (min-width: 768px) {
       .overlay-container {
         padding: 6rem 4rem calc(var(--dock-h) + 2rem);
+        padding-left: var(--site-edge);
+        padding-right: var(--site-edge);
       }
     }
 
     @media (min-width: 1280px) {
       .overlay-container {
         padding: 6rem 8rem calc(var(--dock-h) + 2rem);
+        padding-left: var(--site-edge);
+        padding-right: var(--site-edge);
       }
     }
 
-    /* Align hero text with the navbar logo / every other section */
-    .overlay-container {
-      padding-left: var(--site-edge);
-      padding-right: var(--site-edge);
-    }
-
-    /* Stage card wrappers */
     .stage-card {
       max-width: 48rem;
       width: 100%;
@@ -198,7 +305,6 @@ export interface StageState {
       max-width: 42rem;
     }
 
-    /* Typography */
     .stage-title {
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
@@ -228,7 +334,6 @@ export interface StageState {
       margin-bottom: 1.5rem;
     }
 
-    /* Text Gradients */
     .text-gradient-blue {
       background: linear-gradient(135deg, #ff7d7d 0%, #8a181a 60%, #7c1a1a 100%);
       -webkit-background-clip: text;
@@ -258,7 +363,6 @@ export interface StageState {
       background-clip: text;
     }
 
-    /* CTA Button */
     .cta-wrapper {
       margin-bottom: 2rem;
       pointer-events: auto;
@@ -304,7 +408,6 @@ export interface StageState {
       transform: translateX(3px);
     }
 
-    /* Outro Stage Badge & Action */
     .stage-badge {
       display: inline-flex;
       align-items: center;
@@ -339,15 +442,10 @@ export interface StageState {
     }
 
     @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-6px);
-      }
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
     }
 
-    /* Scroll Mouse Prompt (sits on top of the dock, joined to its border) */
     .scroll-hint {
       position: absolute;
       bottom: calc(var(--dock-h) - 2px);
@@ -395,19 +493,17 @@ export interface StageState {
     }
 
     @keyframes scroll-wheel-anim {
-      0% { transform: translateY(0); opacity: 1; }
-      75% { transform: translateY(7px); opacity: 0; }
+      0%   { transform: translateY(0); opacity: 1; }
+      75%  { transform: translateY(7px); opacity: 0; }
       100% { transform: translateY(0); opacity: 0; }
     }
 
     @keyframes scroll-line-anim {
       0%, 100% { transform: scaleY(0.55); opacity: 0.5; }
-      50% { transform: scaleY(1); opacity: 1; }
+      50%      { transform: scaleY(1); opacity: 1; }
     }
 
-    /* ============================================================ */
-    /* BOTTOM FLOATING SERVICE DOCK                                  */
-    /* ============================================================ */
+    /* ── Service dock (unchanged) ────────────────────────────────────── */
     .service-dock {
       position: absolute;
       left: 0;
@@ -424,8 +520,6 @@ export interface StageState {
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Shared curved silhouette: big elliptical top corners.
-       Extends 4px past the viewport so side/bottom edges are never drawn. */
     .dock-bg,
     .dock-ring {
       position: absolute;
@@ -436,17 +530,12 @@ export interface StageState {
       border-radius: 13% 13% 0 0 / 68% 68% 0 0;
     }
 
-    /* Glass fill */
     .dock-bg {
-      // background:
-      //   radial-gradient(ellipse 60% 120% at 50% 0%, rgba(80, 96, 255, 0.16), transparent 70%),
-      //   linear-gradient(180deg, rgba(18, 26, 78, 0.62) 0%, rgba(8, 12, 40, 0.93) 55%, #050818 100%);
       -webkit-backdrop-filter: blur(16px);
       backdrop-filter: blur(16px);
       box-shadow: 0 -18px 60px -26px rgba(17, 51, 222, 0.55);
     }
 
-    /* Glowing border ring (fades out toward the bottom) */
     .dock-ring {
       filter: drop-shadow(0 0 6px rgba(8, 75, 243, 0.65));
       -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, rgba(0, 0, 0, 0.12) 100%);
@@ -458,7 +547,7 @@ export interface StageState {
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      padding: 1.5px; /* border thickness */
+      padding: 1.5px;
       box-sizing: border-box;
       -webkit-mask:
         linear-gradient(#000 0 0) content-box,
@@ -470,7 +559,6 @@ export interface StageState {
       mask-composite: exclude;
     }
 
-    /* Flowing blue -> violet colour along the border */
     .dock-ring__base {
       background: linear-gradient(
         90deg,
@@ -485,7 +573,6 @@ export interface StageState {
       animation: dock-flow 8s linear infinite;
     }
 
-    /* Bright light that sweeps left -> right along the border */
     .dock-ring__comet {
       background: linear-gradient(
         90deg,
@@ -508,7 +595,6 @@ export interface StageState {
       to   { background-position: 0% 0; }
     }
 
-    /* Content row: [<]  [ 3 services ]  [>] */
     .dock-inner {
       position: absolute;
       inset: 0;
@@ -561,7 +647,6 @@ export interface StageState {
       flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
-      /* extra room so icon glow / float is not clipped */
       padding: 1.5rem 0;
       margin: -1.5rem 0;
     }
@@ -585,7 +670,6 @@ export interface StageState {
       color: inherit;
     }
 
-    /* Thin fading divider between services */
     .dock-item::before {
       content: '';
       position: absolute;
@@ -692,9 +776,12 @@ export interface StageState {
     @media (prefers-reduced-motion: reduce) {
       .service-dock, .dock-icon, .dock-ring__base, .dock-ring__comet, .scroll-line { animation: none; }
       .dock-track { transition: none; }
+      .model-wrapper::before,
+      .model-tilt,
+      .model-float,
+      .model-image { animation: none; }
     }
 
-    /* Frame progress bar */
     .progress-bar-container {
       position: absolute;
       bottom: 0;
@@ -713,51 +800,45 @@ export interface StageState {
     }
 
     @media (max-width: 640px) {
-      .hide-mobile {
-        display: none;
-      }
+      .hide-mobile { display: none; }
     }
   `],
   template: `
     <section id="hero" class="hero-scroll-driver">
       <div class="hero-sticky" #stickyEl>
 
-        <!-- Top Accent Line -->
         <div class="top-accent"></div>
-
-        <!-- Ambient Atmospheric Lights -->
         <div class="ambient-glow-1"></div>
         <div class="ambient-glow-2"></div>
 
-        <!-- Canvas for high-performance 300-frame image sequence -->
+        <!-- Frame sequence canvas -->
         <canvas #canvasEl></canvas>
 
-        <!-- 3D model canvas, layered over the frame sequence -->
-        <canvas #modelCanvasEl class="model-canvas"></canvas>
+        <!-- Animated image layer with layered premium effects -->
+        <div #modelWrapper class="model-wrapper">
+          <span class="model-tilt">
+            <span class="model-float">
+              <img class="model-image" [src]="modelImagePath" alt="" />
+            </span>
+          </span>
+        </div>
 
-        <!-- Vignette Mask for legibility -->
         <div class="vignette"></div>
 
-        <!-- ============================================================== -->
-        <!-- SCROLL-SYNCHRONIZED FEATURE & BRAND OVERLAYS                    -->
-        <!-- ============================================================== -->
         <div class="overlay-container">
 
-          <!-- STAGE 0: Brand Intro (0.00 - 0.20) -->
+          <!-- STAGE 0 -->
           <div *ngIf="stage0.visible"
                class="stage-card"
                [style.opacity]="stage0.opacity"
                [style.transform]="stage0.transform">
-
             <h1 class="stage-title">
               Creating modern <br class="hide-mobile" />
               <span class="text-gradient-white">digital experiences.</span>
             </h1>
-
             <p class="stage-desc">
-          I love turning ideas into clean, interactive, and meaningful digital experiences that are visually engaging, responsive, and built with the user in mind.
+              I love turning ideas into clean, interactive, and meaningful digital experiences that are visually engaging, responsive, and built with the user in mind.
             </p>
-
             <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
@@ -768,21 +849,18 @@ export interface StageState {
             </div>
           </div>
 
-          <!-- STAGE 1: Feature 01 - High-Velocity Web & Cloud Infrastructure (0.22 - 0.44) -->
+          <!-- STAGE 1 -->
           <div *ngIf="stage1.visible"
                class="stage-card"
                [style.opacity]="stage1.opacity"
                [style.transform]="stage1.transform">
-
             <h2 class="stage-title">
               Building powerful applications from<br class="hide-mobile" />
               <span class="text-gradient-white">frontend to backend</span>
             </h2>
-
             <p class="stage-desc">
-             With experience in Angular, Node.js, REST APIs, and databases, I enjoy building complete applications that connect beautiful interfaces with powerful backend functionality.
+              With experience in Angular, Node.js, REST APIs, and databases, I enjoy building complete applications that connect beautiful interfaces with powerful backend functionality.
             </p>
-
             <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
@@ -793,21 +871,18 @@ export interface StageState {
             </div>
           </div>
 
-          <!-- STAGE 2: Feature 02 - Cross-Platform Mobile & Digital Commerce (0.46 - 0.70) -->
+          <!-- STAGE 2 -->
           <div *ngIf="stage2.visible"
                class="stage-card"
                [style.opacity]="stage2.opacity"
                [style.transform]="stage2.transform">
-
             <h2 class="stage-title">
-            Turning ideas into products<br class="hide-mobile" />
+              Turning ideas into products<br class="hide-mobile" />
               <span class="bg-gradient-white">through code.</span>
             </h2>
-
             <p class="stage-desc">
-             Through vibe coding and AI-assisted development, I experiment with new ideas, prototype quickly, and turn concepts into real products while keeping engineering and usability at the core.
+              Through vibe coding and AI-assisted development, I experiment with new ideas, prototype quickly, and turn concepts into real products while keeping engineering and usability at the core.
             </p>
-
             <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
@@ -818,21 +893,18 @@ export interface StageState {
             </div>
           </div>
 
-          <!-- STAGE 3: Feature 03 - Enterprise AI & Autonomous Workflows (0.72 - 0.94) -->
+          <!-- STAGE 3 -->
           <div *ngIf="stage3.visible"
                class="stage-card"
                [style.opacity]="stage3.opacity"
                [style.transform]="stage3.transform">
-
             <h2 class="stage-title">
-             Turning complex challenges <br class="hide-mobile" />
+              Turning complex challenges <br class="hide-mobile" />
               <span class="text-gradient-white">into simple solutions</span>
             </h2>
-
             <p class="stage-desc">
-             I enjoy breaking down complex problems, exploring different approaches, and building practical solutions that are efficient, scalable, and easy to use.
+              I enjoy breaking down complex problems, exploring different approaches, and building practical solutions that are efficient, scalable, and easy to use.
             </p>
-
             <div class="cta-wrapper">
               <a href="#newsletter" class="cta-btn">
                 <span>GET IN TOUCH</span>
@@ -843,24 +915,20 @@ export interface StageState {
             </div>
           </div>
 
-          <!-- STAGE 4: Transition Outro (0.95 - 1.00) -->
+          <!-- STAGE 4 -->
           <div *ngIf="stage4.visible"
                class="stage-card stage-card-outro"
                [style.opacity]="stage4.opacity"
                [style.transform]="stage4.transform">
-
             <div class="stage-badge">
-  <span>Code. Create. Evolve.</span>
-</div>
-
-<h2 class="stage-title stage-title-sm">
-  Explore My <span class="text-gradient-white">Work & Vision</span>
-</h2>
-
-<p class="stage-desc stage-desc-sm">
-  From crafting seamless frontend experiences to building full-stack applications and experimenting with AI-powered vibe coding, explore how I turn ideas into meaningful digital products.
-</p>
-
+              <span>Code. Create. Evolve.</span>
+            </div>
+            <h2 class="stage-title stage-title-sm">
+              Explore My <span class="text-gradient-white">Work & Vision</span>
+            </h2>
+            <p class="stage-desc stage-desc-sm">
+              From crafting seamless frontend experiences to building full-stack applications and experimenting with AI-powered vibe coding, explore how I turn ideas into meaningful digital products.
+            </p>
             <div class="discover-more">
               <span>Discover More</span>
               <svg class="discover-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -871,7 +939,6 @@ export interface StageState {
 
         </div>
 
-        <!-- Scroll mouse hint -->
         <div class="scroll-hint" [style.opacity]="scrollPromptOpacity">
           <span>Scroll to explore</span>
           <div class="scroll-mouse">
@@ -880,25 +947,19 @@ export interface StageState {
           <div class="scroll-line"></div>
         </div>
 
-        <!-- ============================================================== -->
-        <!-- BOTTOM FLOATING SERVICE DOCK                                    -->
-        <!-- ============================================================== -->
+        <!-- Service dock (unchanged) -->
         <div class="service-dock">
-
           <div class="dock-bg"></div>
           <div class="dock-ring" aria-hidden="true">
             <span class="dock-ring__base"></span>
             <span class="dock-ring__comet"></span>
           </div>
-
           <div class="dock-inner"
                (mouseenter)="dockPaused = true"
                (mouseleave)="dockPaused = false">
-
             <button type="button" class="dock-arrow dock-arrow--prev" aria-label="Previous services" (click)="dockPrev()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
             </button>
-
             <div class="dock-viewport">
               <div class="dock-track" [style.transform]="dockTranslate">
                 <a *ngFor="let svc of services; let i = index"
@@ -906,7 +967,6 @@ export interface StageState {
                    [href]="'service-details.html?service=' + svc.slug"
                    [style.flex-basis.%]="100 / dockVisible"
                    [style.--i]="i">
-
                   <span class="dock-icon" [ngSwitch]="svc.icon">
                     <svg *ngSwitchCase="'web'" viewBox="0 0 24 24"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
                     <svg *ngSwitchCase="'mobile'" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>
@@ -916,7 +976,6 @@ export interface StageState {
                     <svg *ngSwitchCase="'hosting'" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
                     <svg *ngSwitchCase="'brand'" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".6"/><circle cx="17.5" cy="10.5" r=".6"/><circle cx="8.5" cy="7.5" r=".6"/><circle cx="6.5" cy="12.5" r=".6"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/></svg>
                   </span>
-
                   <span class="dock-text">
                     <span class="dock-num">{{ svc.num }}<i></i></span>
                     <h3 class="dock-title">{{ svc.title }}</h3>
@@ -925,18 +984,11 @@ export interface StageState {
                 </a>
               </div>
             </div>
-
             <button type="button" class="dock-arrow dock-arrow--next" aria-label="Next services" (click)="dockNext()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
-
           </div>
         </div>
-
-        <!-- Bottom Frame Progress Bar -->
-        <!-- <div class="progress-bar-container">
-          <div class="progress-bar-fill" [style.width.%]="progressPercent"></div>
-        </div> -->
 
       </div>
     </section>
@@ -944,80 +996,72 @@ export interface StageState {
 })
 export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvasEl') canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('modelCanvasEl') modelCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('modelWrapper') modelWrapperRef!: ElementRef<HTMLDivElement>;
   @ViewChild('stickyEl') stickyRef!: ElementRef<HTMLDivElement>;
 
   readonly totalFrames = TOTAL_FRAMES;
+  readonly modelImagePath = MODEL_IMAGE_PATH;
 
-  // Scroll tracking values
   progressPercent = 0;
   scrollPromptOpacity = 1;
   activeStageIndex = 0;
 
-  // Bottom service dock (carousel)
   readonly services: DockService[] = [
     {
-    num: '01',
-    title: 'Frontend Development',
-    slug: 'frontend-development',
-    icon: 'web',
-    desc: 'Creating modern, responsive and interactive web experiences using Angular, TypeScript and modern frontend technologies.'
-  },
-
-  {
-    num: '02',
-    title: 'Full-Stack Development',
-    slug: 'full-stack-development',
-    icon: 'mobile',
-    desc: 'Building complete applications from intuitive frontend interfaces to powerful backend systems using Node.js and databases.'
-  },
-
-  {
-    num: '03',
-    title: 'API & Backend Development',
-    slug: 'api-backend-development',
-    icon: 'cart',
-    desc: 'Developing reliable REST APIs and backend services that connect applications, manage data and support scalable solutions.'
-  },
-
-  {
-    num: '04',
-    title: 'AI & Machine Learning',
-    slug: 'ai-machine-learning',
-    icon: 'marketing',
-    desc: 'Exploring artificial intelligence and machine learning to build intelligent features, automation and smarter digital experiences.'
-  },
-
-  {
-    num: '05',
-    title: 'Vibe Coding',
-    slug: 'vibe-coding',
-    icon: 'ai',
-    desc: 'Turning ideas into working products through AI-assisted development, rapid experimentation and creative problem solving.'
-  },
-
-  {
-    num: '06',
-    title: 'UI Development',
-    slug: 'ui-development',
-    icon: 'brand',
-    desc: 'Transforming designs into polished, responsive and engaging interfaces with attention to usability and visual details.'
-  },
-
-  {
-    num: '07',
-    title: 'Developer Tools',
-    slug: 'developer-tools',
-    icon: 'hosting',
-    desc: 'Building practical tools that simplify development workflows, automate repetitive tasks and improve developer productivity.'
-  }
+      num: '01',
+      title: 'Frontend Development',
+      slug: 'frontend-development',
+      icon: 'web',
+      desc: 'Creating modern, responsive and interactive web experiences using Angular, TypeScript and modern frontend technologies.'
+    },
+    {
+      num: '02',
+      title: 'Full-Stack Development',
+      slug: 'full-stack-development',
+      icon: 'mobile',
+      desc: 'Building complete applications from intuitive frontend interfaces to powerful backend systems using Node.js and databases.'
+    },
+    {
+      num: '03',
+      title: 'API & Backend Development',
+      slug: 'api-backend-development',
+      icon: 'cart',
+      desc: 'Developing reliable REST APIs and backend services that connect applications, manage data and support scalable solutions.'
+    },
+    {
+      num: '04',
+      title: 'AI & Machine Learning',
+      slug: 'ai-machine-learning',
+      icon: 'marketing',
+      desc: 'Exploring artificial intelligence and machine learning to build intelligent features, automation and smarter digital experiences.'
+    },
+    {
+      num: '05',
+      title: 'Vibe Coding',
+      slug: 'vibe-coding',
+      icon: 'ai',
+      desc: 'Turning ideas into working products through AI-assisted development, rapid experimentation and creative problem solving.'
+    },
+    {
+      num: '06',
+      title: 'UI Development',
+      slug: 'ui-development',
+      icon: 'brand',
+      desc: 'Transforming designs into polished, responsive and engaging interfaces with attention to usability and visual details.'
+    },
+    {
+      num: '07',
+      title: 'Developer Tools',
+      slug: 'developer-tools',
+      icon: 'hosting',
+      desc: 'Building practical tools that simplify development workflows, automate repetitive tasks and improve developer productivity.'
+    }
   ];
   dockIndex = 0;
   dockVisible = 3;
   dockPaused = false;
   private dockTimer: ReturnType<typeof setInterval> | undefined;
 
-  // Stage Overlay States (opacity, transform, visibility)
   stage0: StageState = { opacity: 1, transform: 'translateY(0px)', visible: true };
   stage1: StageState = { opacity: 0, transform: 'translateY(24px)', visible: false };
   stage2: StageState = { opacity: 0, transform: 'translateY(24px)', visible: false };
@@ -1032,17 +1076,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private scrollHandler!: () => void;
   private resizeHandler!: () => void;
   private orientationHandler!: () => void;
-
-  // --- 3D model layer state ---
-  private modelScene!: THREE.Scene;
-  private modelCamera!: THREE.PerspectiveCamera;
-  private modelRenderer!: THREE.WebGLRenderer;
-  private modelRoot!: THREE.Group;
-  private modelRafId = 0;
-  private modelClock = new THREE.Clock();
-  private modelPlaced = false;
-  private modelVisible = true;           // false while the hero is scrolled out of view
-  private heroObserver?: IntersectionObserver;
   private lastW = 0;
   private lastH = 0;
 
@@ -1055,32 +1088,32 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.setupCanvas();
-    this.setupModelScene();
+    this.updateModelImagePosition();
+
     this.ngZone.runOutsideAngular(() => {
       this.scrollHandler = () => this.onScroll();
       this.lastW = window.innerWidth;
       this.lastH = window.innerHeight;
       this.resizeHandler = () => {
-        // On phones the address bar showing/hiding fires 'resize' while scrolling.
-        // Re-creating the canvases for that tiny height change causes stutter,
-        // so only refit on a real size change.
         const w = window.innerWidth, h = window.innerHeight;
         if (w !== this.lastW || Math.abs(h - this.lastH) > 160 || w >= 1024) {
           this.lastW = w;
           this.lastH = h;
           this.fitCanvas();
-          this.fitModelCanvas();
+          this.updateModelImagePosition();
         }
         const before = this.dockVisible;
         this.updateDockVisible();
         if (before !== this.dockVisible) this.cdr.detectChanges();
       };
-      this.orientationHandler = () => setTimeout(() => { this.fitCanvas(); this.fitModelCanvas(); }, 150);
+      this.orientationHandler = () => setTimeout(() => {
+        this.fitCanvas();
+        this.updateModelImagePosition();
+      }, 150);
       window.addEventListener('scroll', this.scrollHandler, { passive: true });
       window.addEventListener('resize', this.resizeHandler, { passive: true });
       window.addEventListener('orientationchange', this.orientationHandler);
 
-      // Auto-advance the service dock every 4.5s (paused while hovered)
       this.dockTimer = setInterval(() => {
         if (this.dockPaused || document.hidden) return;
         this.dockNext();
@@ -1094,10 +1127,7 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     window.removeEventListener('resize', this.resizeHandler);
     window.removeEventListener('orientationchange', this.orientationHandler);
     cancelAnimationFrame(this.rafId);
-    cancelAnimationFrame(this.modelRafId);
-    this.heroObserver?.disconnect();
     if (this.dockTimer) clearInterval(this.dockTimer);
-    this.disposeModelScene();
   }
 
   // ---------- Service dock carousel ----------
@@ -1150,8 +1180,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private preloadFrames(): void {
     this.frames = new Array(TOTAL_FRAMES);
 
-    // Phones load every 2nd frame (half the data); drawFrame() falls back to
-    // the nearest loaded frame, so the animation still looks continuous.
     const stride = window.innerWidth < 768 ? 2 : 1;
     const indexes: number[] = [];
     for (let i = 0; i < TOTAL_FRAMES; i += stride) indexes.push(i);
@@ -1167,7 +1195,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       this.frames[i] = img;
     });
 
-    // First frame immediately, then the rest in small batches
     (async () => {
       await loadOne(0);
       for (let k = 1; k < indexes.length; k += 6) {
@@ -1176,7 +1203,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     })();
   }
 
-  /** Closest frame that has finished loading (used when the exact one is missing). */
   private nearestLoaded(index: number): HTMLImageElement | undefined {
     for (let d = 1; d < 40; d++) {
       for (const j of [index - d, index + d]) {
@@ -1199,13 +1225,12 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     this.targetFrame = Math.round(progress * (TOTAL_FRAMES - 1));
     this.progressPercent = progress * 100;
 
-    // Calculate stage animations
     this.computeStageStates(progress);
 
     cancelAnimationFrame(this.rafId);
     this.rafId = requestAnimationFrame(() => {
       this.renderFrame();
-      this.cdr.detectChanges();   // once per frame (was: on every scroll event)
+      this.cdr.detectChanges();
     });
   }
 
@@ -1273,7 +1298,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private computeStageStates(p: number): void {
     this.scrollPromptOpacity = Math.max(0, 1 - p / 0.06);
 
-    // Stage 0: Brand Intro (0.00 -> 0.20)
     if (p <= 0.20) {
       const fadeOutStart = 0.14;
       let opacity = 1;
@@ -1292,16 +1316,10 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       this.stage0 = { opacity: 0, transform: 'translateY(-24px)', visible: false };
     }
 
-    // Stage 1: Feature 01 (Web & Cloud) (0.22 -> 0.44)
     this.stage1 = this.calculateStageState(p, 0.22, 0.44, 0.05);
-
-    // Stage 2: Feature 02 (Mobile & Commerce) (0.46 -> 0.70)
     this.stage2 = this.calculateStageState(p, 0.46, 0.70, 0.05);
-
-    // Stage 3: Feature 03 (Enterprise AI) (0.72 -> 0.94)
     this.stage3 = this.calculateStageState(p, 0.72, 0.94, 0.05);
 
-    // Stage 4: Outro Transition (0.94+ -> stays visible at end of scroll)
     if (p >= 0.94) {
       const fadeInStart = 0.94;
       const fadeInDur = 0.03;
@@ -1322,7 +1340,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
       this.stage4 = { opacity: 0, transform: 'translateY(24px)', visible: false };
     }
 
-    // Determine active phase index
     if (p < 0.22) {
       this.activeStageIndex = 0;
     } else if (p < 0.46) {
@@ -1343,176 +1360,39 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ------------------------------------------------------------------
-  // 3D MODEL LAYER — renders tiny-planet.glb on its own transparent
-  // canvas, layered on top of the frame sequence. Position/scale are
-  // driven by scroll progress; rotation spins continuously.
+  // Image placement – same maths as the 3D model used to have
   // ------------------------------------------------------------------
+  private updateModelImagePosition(): void {
+    const wrapper = this.modelWrapperRef?.nativeElement;
+    if (!wrapper) return;
 
-  private setupModelScene(): void {
-    const canvas = this.modelCanvasRef.nativeElement;
-
-    this.modelScene = new THREE.Scene();
-
-    this.modelCamera = new THREE.PerspectiveCamera(
-      35,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
-    );
-    this.modelCamera.position.set(0, 0, 6);
-
-    this.modelRenderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: window.innerWidth >= 768,
-    });
-    this.fitModelCanvas();
-
-    const ambient = new THREE.AmbientLight(0xffffff, 1.15);
-    const key = new THREE.DirectionalLight(0xffffff, 1.5);
-    key.position.set(3, 4, 5);
-    const rim = new THREE.DirectionalLight(0xff9d9d, 0.7);
-    rim.position.set(-4, -2, -3);
-    this.modelScene.add(ambient, key, rim);
-
-    // All scroll-driven transforms (position/scale) are applied to this
-    // group; the loaded model spins independently inside it via rotation.
-    this.modelRoot = new THREE.Group();
-    this.modelScene.add(this.modelRoot);
-
-    const loader = new GLTFLoader();
-
-    // The model is Draco-compressed (geometry) + WebP (textures), which is
-    // what cut it from ~28MB down to ~4.8MB. Draco needs its decoder files
-    // available locally — see the setup note below.
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
-    loader.setDRACOLoader(dracoLoader);
-
-    loader.load(
-      MODEL_PATH,
-      (gltf) => {
-        const model = gltf.scene;
-
-        // Center the model on its own origin and normalize its size so
-        // it reads consistently regardless of how it was authored.
-        const box = new THREE.Box3().setFromObject(model);
-        const size = new THREE.Vector3();
-        const center = new THREE.Vector3();
-        box.getSize(size);
-        box.getCenter(center);
-        model.position.sub(center);
-
-        const maxDim = Math.max(size.x, size.y, size.z) || 1;
-        const normalizeScale = MODEL_BASE_DIAMETER / maxDim;
-        model.scale.setScalar(normalizeScale);
-
-        this.modelRoot.add(model);
-      },
-      undefined,
-      (err) => console.error('Failed to load hero model:', err)
-    );
-
-    this.ngZone.runOutsideAngular(() => {
-      this.animateModel();
-
-      // Stop drawing the 3D model while the hero is scrolled out of view
-      const heroEl = document.getElementById('hero');
-      if (heroEl && 'IntersectionObserver' in window) {
-        this.heroObserver = new IntersectionObserver((entries) => {
-          const visible = entries[0].isIntersecting;
-          this.modelVisible = visible;
-          if (visible && !this.modelRafId) {
-            this.modelClock.getDelta();            // drop the time spent paused
-            this.modelRafId = requestAnimationFrame(this.animateModel);
-          }
-        }, { rootMargin: '100px 0px' });
-        this.heroObserver.observe(heroEl);
-      }
-    });
-  }
-
-  private animateModel = (): void => {
-    if (!this.modelVisible) { this.modelRafId = 0; return; }   // paused while off-screen
-    this.modelRafId = requestAnimationFrame(this.animateModel);
-    if (!this.modelRenderer || !this.modelRoot) return;
-
-    const dt = this.modelClock.getDelta();
-
-    // Continuous horizontal spin; position stays locked on the globe.
-    this.modelRoot.rotation.y += dt * 0.6;
-
-    this.applyModelPlacement(dt);
-
-    this.modelRenderer.render(this.modelScene, this.modelCamera);
-  };
-
-  /**
-   * Places the model on the bottom part of the glowing globe (from frame 273) at its
-   * original size. On small / narrow screens - where the frame is cropped and the
-   * globe can be off-screen - it glides to the centre of the screen instead.
-   */
-  private applyModelPlacement(dt: number): void {
     const cw = window.innerWidth;
     const ch = window.innerHeight;
 
-    // World-space size of the view at z = 0
-    const halfH = Math.tan(THREE.MathUtils.degToRad(this.modelCamera.fov / 2)) * this.modelCamera.position.z;
-    const halfW = halfH * (cw / ch);
-    const modelH = MODEL_BASE_DIAMETER * MODEL_SCALE; // model's tallest side, world units
+    const cameraZ = 6;
+    const fov = 35;
+    const halfHWorld = Math.tan((fov * Math.PI) / 360) * cameraZ;
+    const pixelsPerWorldUnit = ch / (2 * halfHWorld);
+    const modelDiameterPx = MODEL_BASE_DIAMETER * MODEL_SCALE * pixelsPerWorldUnit;
 
-    // Globe anchor: same "cover" fit that drawFrame() uses for the frame image
     const s = Math.max(cw / FRAME_W, ch / FRAME_H);
     const screenX = (cw - FRAME_W * s) / 2 + (EARTH_X + MODEL_OFFSET_X) * s;
     const screenY = (ch - FRAME_H * s) / 2 + (EARTH_Y + MODEL_OFFSET_Y) * s;
-    const anchorX = ((screenX / cw) * 2 - 1) * halfW;
-    const anchorY = (1 - (screenY / ch) * 2) * halfH;
 
-    // Would the model be cut off by the screen edges if it sat on the globe?
-    const clipped = Math.abs(anchorX) + modelH * 0.5 > halfW;
-    const centred = cw < CENTER_BELOW_WIDTH || clipped;
+    let centerX = screenX;
+    let centerY = screenY + (MODEL_SINK - 0.5) * modelDiameterPx;
 
-    const targetX = centred ? 0 : anchorX;
-    // Model origin is its centre: lift it so its base rests on the globe's bottom edge
-    const targetY = centred
-      ? CENTER_OFFSET_Y * 2 * halfH
-      : anchorY + (0.5 - MODEL_SINK) * modelH;
+    const wouldClip = centerX - modelDiameterPx / 2 < 0 || centerX + modelDiameterPx / 2 > cw;
+    const centred = cw < CENTER_BELOW_WIDTH || wouldClip;
 
-    // First frame snaps; afterwards glide (e.g. when the window is resized)
-    const k = this.modelPlaced ? 1 - Math.exp(-dt * 6) : 1;
-    this.modelPlaced = true;
+    if (centred) {
+      centerX = cw / 2;
+      centerY = ch / 2 - CENTER_OFFSET_Y * ch;
+    }
 
-    this.modelRoot.position.x += (targetX - this.modelRoot.position.x) * k;
-    this.modelRoot.position.y += (targetY - this.modelRoot.position.y) * k;
-    this.modelRoot.position.z = 0;
-    this.modelRoot.scale.setScalar(MODEL_SCALE);
-  }
-
-  private fitModelCanvas(): void {
-    if (!this.modelRenderer || !this.modelCamera) return;
-
-    const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.25 : 2);
-    this.modelRenderer.setPixelRatio(dpr);
-    this.modelRenderer.setSize(window.innerWidth, window.innerHeight, false);
-
-    this.modelCamera.aspect = window.innerWidth / window.innerHeight;
-    this.modelCamera.updateProjectionMatrix();
-  }
-
-  private disposeModelScene(): void {
-    if (!this.modelScene) return;
-
-    this.modelScene.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (mesh.geometry) mesh.geometry.dispose();
-      const material = (mesh as any).material;
-      if (Array.isArray(material)) {
-        material.forEach((m: THREE.Material) => m.dispose());
-      } else if (material) {
-        material.dispose();
-      }
-    });
-
-    this.modelRenderer?.dispose();
+    wrapper.style.width = modelDiameterPx + 'px';
+    wrapper.style.height = modelDiameterPx + 'px';
+    wrapper.style.left = centerX + 'px';
+    wrapper.style.top = centerY + 'px';
   }
 }

@@ -1,0 +1,248 @@
+/* ============================================================
+   CONTACT FORM STYLES
+   Scoped by .contact-panel so they don't affect anything else.
+   Loaded with ViewEncapsulation.None, so the selectors apply
+   globally — same behaviour as an inline <style> block.
+   ============================================================ */
+/* ============================================================
+   Force the contact card visible.
+   style.css sets .newsletter-card { opacity: 0 } and relies on
+   a JS reveal script (contact.js) to add a visible class.
+   Since we replaced the anchors with an Angular form, we no
+   longer load contact.js — so we reveal it directly here.
+   ============================================================ */
+.newsletter-card {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.newsletter-neon-halo,
+.newsletter-neon-shell,
+.newsletter-card__panel {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.contact-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.75rem 1.5rem;
+  position: relative;   /* anchor for absolutely positioned overlays */
+}
+
+/* ---------- Form wrapper ----------
+   z-index is critical: the panel contains two absolutely
+   positioned overlays (.newsletter-card__sweep and .dn-sheen).
+   Without a stacking context here, they cover the form. */
+.contact-form {
+  position: relative;
+  z-index: 5;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+/* ---------- Field wrapper ---------- */
+.contact-field {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  cursor: text;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 125, 125, 0.10) 0%,
+      rgba(138, 24, 26, 0.06) 45%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  &:hover,
+  &:focus-within {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 125, 125, 0.35);
+    box-shadow:
+      0 12px 28px -12px rgba(0, 0, 0, 0.75),
+      0 0 24px -8px rgba(255, 125, 125, 0.35);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &.is-invalid {
+    border-color: rgba(255, 90, 90, 0.55);
+    box-shadow: 0 0 18px -8px rgba(255, 90, 90, 0.45);
+  }
+}
+
+.contact-field--area {
+  align-items: flex-start;
+}
+
+/* ---------- Icon ---------- */
+.contact-field__icon {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(138, 24, 26, 0.15);
+  border: 1px solid rgba(138, 24, 26, 0.35);
+  color: #ff7d7d;
+  box-shadow: inset 0 0 12px rgba(255, 125, 125, 0.08);
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+/* ---------- Body (label + input) ---------- */
+.contact-field__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-field__label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.contact-field input,
+.contact-field textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  resize: none;
+  line-height: 1.4;
+}
+
+.contact-field input::placeholder,
+.contact-field textarea::placeholder {
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Kill Chrome's autofill blue background */
+.contact-field input:-webkit-autofill,
+.contact-field input:-webkit-autofill:hover,
+.contact-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ---------- Submit button ---------- */
+.contact-submit {
+  margin-top: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 125, 125, 0.45);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 125, 125, 0.20) 0%,
+    rgba(138, 24, 26, 0.18) 100%
+  );
+  color: #ffe6e6;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    opacity 0.25s ease;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 125, 125, 0.32) 0%,
+      rgba(138, 24, 26, 0.28) 100%
+    );
+    box-shadow:
+      0 14px 30px -14px rgba(0, 0, 0, 0.8),
+      0 0 26px -8px rgba(255, 125, 125, 0.55);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ---------- Status message ---------- */
+.contact-status {
+  margin: 0.35rem 0 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.contact-status--ok  { color: #6ee7b7; }
+.contact-status--err { color: #ff8c8c; }
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 480px) {
+  .contact-field input,
+  .contact-field textarea {
+    font-size: 0.875rem;
+  }
+
+  .contact-field__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
